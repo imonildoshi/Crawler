@@ -113,7 +113,7 @@ class Mytools {
         
         foreach($email as $val){
             if(!in_array($val, $emailfinal, true)){
-                if($this->isValidEmail($val) && $this->get_file_extension($val) !== 'png') {
+                if($this->isValidEmail($val)) {
                     array_push($emailfinal, $val);
                 }
             }
@@ -135,15 +135,38 @@ class Mytools {
 	return substr(strrchr($file_name,'.'),1);
     }
 
-    function isValidEmail($email) {
-        return filter_var($email, FILTER_VALIDATE_EMAIL) && preg_match('/@.+\./', $email);
-    }
+    	function isValidEmail($email)
+	{
+
+		$case = array('someone','domain','example','username','abc','xxx','name@');
+		if(contains($email,$case))
+		{
+			return false;
+		}
+		if(preg_match('/[\'^£$!%&*()}{#~?><>,|=+¬]/', $email))
+		{
+			return false;
+		}
+		$ignore = array('gif','jpg','jpeg','png','js','css','htm','html');
+		$ext = strtolower(pathinfo($email, PATHINFO_EXTENSION)); // Using strtolower to overcome case sensitive
+		if (in_array($ext, $ignore)) {
+			return false;
+		} else {
+			$part = explode("@", $email);
+			if(!is_numeric($part[0]))
+			{
+				return filter_var($email, FILTER_VALIDATE_EMAIL) && preg_match('/@.+\./', $email);
+			}
+		}
+	}
+
+
 
     public function getDatabase() {
         $servername = "localhost";
         $username = "root";
         $password = "qwerasdf";
-        $dbname = "monilbot";
+        $dbname = "crawler";
 
         // Create connection
         $conn = new mysqli($servername, $username, $password, $dbname);

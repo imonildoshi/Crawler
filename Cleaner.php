@@ -2,103 +2,70 @@
 include 'htmldom/simple_html_dom.php';
 include 'Mytools.php';
 
-//Hi
+Mylogic();
 
-if(empty ($argv[1])) {
-    $websites = array_map('str_getcsv', file('data.csv'));
-} else if($argv[1] != 1){    
-    $websites = array("website" => array($argv[1]));    
-} else {
-    while (true) {
-        $domain = getanydomain();
-        Mylogic($domain);
-        domainCrawled($domain);
-    }
-}
-
-foreach($websites as $key) {
-    foreach($key as $values) {
-        Mylogic($values);
-    }
-}
-
-
-function Mylogic($domain) {
-    $limit = 20;
+function Mylogic() {    
     $monil = new Mytools();
-    $domain = $monil->test_input($domain);
-    $website = "http://www.$domain";
-
-    echo "\nScanning : ".$website."\n";
-        
-    $found = array();
-    $ahref = array();
-    $ahrefall = array();
-    $ahrefgood = array();
-    $finalemail = array();
-
-    $mytestcase = array('support','contact','about','reach');
-    $socialmedia = array('facebook.com','plus.google.com','linkedin.com',
-                         'youtube.com','twitter.com','vk.com','mailto',
-                         'pinterest.com','instagram.com','tumblr.com',
-                         'feedburner.com','itunes.apple.com','store.ovi.com',
-                         'play.google.com','windowsphone.com','appworld.blackberry.com');
-
-    if(!checkWebsite($monil,$domain)) {
-        return;
+    $db = $monil->getDatabase();
+    $myarray = array();
+    $query = "SELECT email FROM emaildata";
+    $result = $db->query($query);
+    while($row = $result->fetch_assoc()) {
+        $email = $row['email'];
+	array_push($myarray,$email);
     }
-        
-    echo "\nGot the page ...\n";
-
-    $webpage = $monil->call_curl($website);
-
-    $html = $webpage['object'];
-    foreach($html->find('a') as $e) {
-        //echo $e->href."\n";
-        $str = str_replace("$website","",$e->href);                    
-            array_push($ahrefall, $str);
+    $i=0;
+    foreach($myarray as $emailid)
+    {
+    	if(isValidEmail($emailid)){
+	#	echo "valid";
+	}    else {
+		echo $emailid."\n";
+		$db->query("delete from emaildata where email = \"$emailid\"");$i++;
+	}
+#	echo "\n";
     }
-
-    $ahrefall = array_unique($ahrefall);
-        
-    foreach ($ahrefall as $value) {       
-        if(((substr( $value, 0, 1 ) === "/") || (substr( $value, 0, 1 ) === "#") || ((substr( $value, 0, 4 ) != "http") && (substr( $value, 0, 4 ) != "java"))) &&  !(substr( $value, 0, 2 ) === "//"))  {
-            if((substr( $value, 0, 1 ) != "/") && (substr( $value, 0, 1 ) != "#")) {
-                $value = "/".$value;
-            }
-            $str = $website.$value;
-            array_push($ahrefgood, $str);
-        } else {
-            if(substr( $value, 0, 4 ) !== "java") {
-                $host = $monil->get_domain($value);                               
-                if(!($monil->contains($value,$socialmedia))) {
-                    array_push($found, $host);
-                }    
-                array_push($ahref, $value);
-            }
-        }
-    }
-    
-    $found = $monil->unique_array_values($found);
-    $ahref = $monil->unique_array_values($ahref);
-    
-    echo "\nlets start !!!\n";
-        
-    $finalemail = getEmailid($monil,$ahrefgood,$ahref,$mytestcase,$finalemail,$limit);    
-        
-    $sociallink = getSociallink($monil,$ahref,$socialmedia,$limit);
-
-    $data = array('found' => $found, 'emailid' => $finalemail, 'social' => $sociallink, 'domain' => $domain);
-    
-    saveData($monil,$data);
-    
-
+	echo "Deleted : $i";
 }
+
+function isValidEmail($email) 
+{
+
+	$case = array('someone','domain','example','username','abc','xxx','name@');
+	if(contains($email,$case))
+	{
+		return false;
+	}
+	if(preg_match('/[\'^£$!%&*()}{#~?><>,|=+¬]/', $email))
+	{
+    		return false;
+	}
+	$ignore = array('gif','jpg','jpeg','png','js','css','htm','html');
+	$ext = strtolower(pathinfo($email, PATHINFO_EXTENSION)); // Using strtolower to overcome case sensitive
+	if (in_array($ext, $ignore)) {
+	    	return false;
+	} else {		
+		$part = explode("@", $email);
+		if(!is_numeric($part[0]))
+		{
+        		return filter_var($email, FILTER_VALIDATE_EMAIL) && preg_match('/@.+\./', $email);
+		}
+	}
+}
+
+ function contains($str,array $arr)
+    {
+        foreach($arr as $a) {
+            if (stripos($str,$a) !== false) return true;
+        }
+        return false;
+    }
+
 
 function domainCrawled($domain) {
     $monil = new Mytools();
     $db = $monil->getDatabase();
-    $query = "update domainfound set status=1 where domain=  '$domain' limit 1";
+    $query = "update domainfound set status=1 where domain='$domain' limit 1";
     $db->query($query);    
     return $domain;
 }
@@ -106,7 +73,7 @@ function domainCrawled($domain) {
 function getanydomain() {
     $monil = new Mytools();
     $db = $monil->getDatabase();
-    $query = "SELECT domain FROM domainfound where status=0 and domain not like '%wordde%' and domain not like '%stack%' and domain not like '%.cn' ORDER BY RAND() LIMIT 1";
+    $query = "SELECT domain FROM domainfound where status=0 and domain not like '%wordde%' and domain not like '%stack%' ORDER BY RAND() LIMIT 1";
     $result = $db->query($query);
     while($row = $result->fetch_assoc()) {
         $domain = $row['domain'];
