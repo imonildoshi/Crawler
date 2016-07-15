@@ -51,36 +51,38 @@ function Mylogic($domain) {
     echo "\nGot the page ...\n";
 
     $webpage = $monil->call_curl($website);
-
+	
+ 
     $html = $webpage['object'];
+
+
     foreach($html->find('a') as $e) {
-        //echo $e->href."\n";
+        echo $e->href."\n";
         $str = str_replace("$website","",$e->href);                    
             array_push($ahrefall, $str);
     }
 
     $ahrefall = array_unique($ahrefall);
- 
-   if(count($ahrefall) == 0) {
 
-            echo "\n Trying again  ...\n";
-            $website = "http://$domain";
+    if(count($ahrefall) == 0) {
 
-            $webpage = $monil->call_curl($website);
+	    echo "\n Trying again  ...\n";
+	    $website = "http://$domain"; 
 
-            $html = $webpage['object'];
+	    $webpage = $monil->call_curl($website);
+
+	    $html = $webpage['object'];
 
 
-            foreach($html->find('a') as $e) {
-                echo $e->href."\n";
-                $str = str_replace("$website","",$e->href);
-                    array_push($ahrefall, $str);
-            }
+	    foreach($html->find('a') as $e) {
+		echo $e->href."\n";
+		$str = str_replace("$website","",$e->href);
+		    array_push($ahrefall, $str);
+	    }
 
-            $ahrefall = array_unique($ahrefall);
+	    $ahrefall = array_unique($ahrefall);
 
     }
-
 
         
     foreach ($ahrefall as $value) {       

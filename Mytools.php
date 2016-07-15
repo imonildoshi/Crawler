@@ -139,7 +139,7 @@ class Mytools {
 	{
 
 		$case = array('someone','domain','example','username','abc','xxx','name@');
-		if(contains($email,$case))
+		if($this->contains($email,$case))
 		{
 			return false;
 		}
@@ -159,7 +159,6 @@ class Mytools {
 			}
 		}
 	}
-
 
 
     public function getDatabase() {

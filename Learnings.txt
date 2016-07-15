@@ -1,19 +1,19 @@
 https://davidwalsh.name/php-notifications
 
-INSERT INTO `emaildata`(`domain`, `email`, `adate`) VALUES ('pepipost.com','pepis@pepipost.com',now()) ON DUPLICATE KEY UPDATE adate=now();
+INSERT INTO `emaildata`(`domain`, `email`, `atime`) VALUES ('pepipost.com','pepis@pepipost.com',now()) ON DUPLICATE KEY UPDATE atime=now();
 
 
 CREATE TABLE `emaildata` (
  `domain` varchar(255) DEFAULT NULL,
  `email` varchar(255) DEFAULT NULL,
- `adate` date DEFAULT NULL,
+ `atime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  UNIQUE KEY `email` (`email`)
 );
 
 CREATE TABLE `socialdata` (
  `domain` varchar(255) NOT NULL,
  `link` varchar(255) NOT NULL,
- `adate` date NOT NULL,
+ `atime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  UNIQUE KEY `link` (`link`)
 );
 
@@ -21,6 +21,6 @@ CREATE TABLE `domainfound` (
  `domain` varchar(255) NOT NULL,
  `foundfrom` varchar(255) NOT NULL,
  `status` int(2) NOT NULL DEFAULT 0,
- `adate` date NOT NULL,
+ `atime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  UNIQUE KEY `domain` (`domain`)
 );
